@@ -129,10 +129,68 @@ A pair of base and bound registers for each portion in the address space, togeth
 
 Problem: leads to externel fragmentation due to variable size of each segments.
 
-#### Paging
-*TODO*
+### Paging
+Paging should be another address translation strategy I guess but important enough to be mentioned separately.
 
-#### Free Space Management
+Paging view physical memory as an array of fixed-sized slots called page frames, each of which can contain a single virtual-memory page.
+
+#### Page Table
+A per-process data structure to translate virtual address to physical address
+
+To translate a virtual address, the address is splitted into two components: the **virtual page number (VPN)**, and the **offset** within that page. Page table translates VPN to **physical frame number (PFN)**. Append PFN with offset gives us the corresponding physicall address.
+
+#### Linear Page Table
+An array of **page-table entries (PTE)**, with their indices being their VPN.
+
+PTE
+- valid bit: whether this page is actively being used
+- protection bit: whether the page could be read fromt, written to, or executed from
+- present bit: whether this page is in physical memory or on disk
+- dirty bit: if the page has been modified since it was brought into memory
+- reference bit: track if a page has been accessed, useful in determining which pages are popular and should be kept in memory
+
+Problem: This kind of page table often takes too much memory especially as a per-process data structure. It also slow thing done because to access data in memory, we have to go to the page table implicitly first to do the translation, which slow memory access by factor of two or more.
+
+#### Translation-lookaside Buffer (TLB): faster translation
+A cache of popular virtual-to-physical address translations in the chip. Making the address translation faster on average.
+
+When an address translation is required, looks VPN up in the TLB first. If TLB hit then done. Otherwise, go to the page table and bring the PTE into TLB (if the memory access is legal), then retry the cache look up.
+
+A good TLB hit rate relies on **spatial locality** and **temporal locality**.
+
+##### TLB During Context Switch
+
+To prevent one process to access memory belonging to other processes, TLB need to be flushed when we switch context, by setting all valid bits to 0. This operation may cause more TLB misses though. Therefore, some system supports sharing of the TLB across context switches, with the **address space identifier (ASID)** field inside.
+
+##### Replacement Policy
+- least recently used (LRU)
+- random
+- etc.
+
+#### Smaller Tables
+- bigger pages
+    
+    Less PTE, but more internal fragmentation
+
+- Hybrid: Paging and Segments
+
+    Instead of a single page table for the whole address space, assign one page table to each logical component: stack, heap, code.. 
+
+    This approach saves space when the process only utilize a compact small portion of its address space. External fragmentation could arise again, since page table is now of variable size.
+
+- Multi-level Page Tables
+
+    Chop up the page table into page-sized units; if an entire page of page-table entries in invalid, don't allocaate that page of the page table at all. Use a new **page directory** structure to track the pages containing PTEs.
+
+    This approach saves spaces when process uses a small portion of its address space. It also avoid the external fragmentation problem above. But in case of TLB miss, two loads from memory is required to do the translation, instead of just one load with the simple linear page table.
+
+- Inverted Page Tables
+
+    A single page table that has an entry for each *physical page* of the system. The entry tells us which process is using this page, and which virtual page of that process maps to this physical page.
+
+    A hash table is often employed to spped lookups, since scanning through the page table would be expensive.
+
+### Free Space Management
 Free list is a list of free blocks on memory available upon a call to malloc().
 
 A free block could be splitted if user requests a small chunk of memory. When user frees a block of memory, coalescing need to be performed, meaning that the newly free block should be merged with adjacent free block currently on the free list if possible.
@@ -171,3 +229,5 @@ Other approaches
     divides tha free space up into chunks of size 2<sup>n</sup>, and return the smallest chunk that's big enough
 
     makes coalescing much easier, but suffers from internal fragmentation
+
+### Swap
