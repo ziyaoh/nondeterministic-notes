@@ -231,3 +231,41 @@ Other approaches
     makes coalescing much easier, but suffers from internal fragmentation
 
 ### Swap
+
+The addition of swap space allows the OS to support the illusion of a large virtual memory for multiple concurrently running processes.
+
+In case of a memory access, if we have a TLB miss and the PTE in page table shows the requested page is not present in physical memory (by the present bit), a page fault occurs and triggers the page fault handler. In this case, the PTE should have the disk address of the page in disk. OS could issue a disk I/O to fetch the page and swap it into memory (**page in**), update the page table, and retry the instruction.
+
+#### Page-Replacement Policy
+To perform a page in, if the memory is full, OS needs to first **page out** some pages to make room. This process is usually performed by a background thread asynchronously.
+
+This policy is critical because disk I/O is way slower than memory access, and we want to minimize the number of page in operation as much as possible. The theoritical optimal replacement policy is to replace the page that will be accessed furthest in the future. This policy leads to the fewest number of misses (and fewest number of page in) overall. This approach is just theoretical though since we can't know the future.
+
+More practical policies
+- FIFO
+- Random
+- LRU
+
+    Precise LRU is too expensive to perform. Systems usually approximate LRU with the help of the **use bit**. e.g. **clock algorithm**
+
+    Some system also considers dirty pages during swaping. Unmodified pages are easier to page out because we don't need to write it back to disk.
+
+#### Other VM Policies
+
+- Page Selection Policy
+
+    the policy to decide when to bring a page into memory
+
+    - demand paging
+    - prefetching
+
+- how the OS write pages out ot dick
+    - one page at a time
+    - clustering writes
+
+        collect several pending writes and write them all at once
+
+### The VAX/VMS Virtual Memory System (Case Study)
+*TODO*
+
+## Concurrency
