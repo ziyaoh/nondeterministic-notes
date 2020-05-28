@@ -269,3 +269,74 @@ More practical policies
 *TODO*
 
 ## Concurrency
+
+### Thread
+
+Threads within the same process share the same address space. Each of them has a separate stack in the address space.
+
+Context switch between threads is pretty similar to that between processes. One difference is that we don't necessarily switch page table for threads.
+
+API
+- Create
+- Join
+- Locks
+    - Initialize
+    - Lock
+    - Unlock
+    - Destroy
+- Conditional Variables
+
+    Useful when some kind of signaling must take place between threads. A lock is required together with a cond var.
+    - Wait
+    - Signal
+    - Broadcast
+
+### Locks
+- spin lock
+- mutex
+- futex
+- two phase lock
+
+    try spin-wait first then sleep
+
+### Thread Safe Data Structures
+
+- Scalable Counting
+
+    Simply add a mutex to a counter is not scalable especially in multi-core machines. A **Sloppy Counter** employs a local counter for each core, a global counter, and a lock for each counter. Increment/Decrement operations changes the local counter, which get updated to the global counter periodically. This updating period incurs trade-off between performance and accuracy, therehen the name Sloppy Counter.
+
+- Concurrent Linked List
+- Concurrent Queue
+- Concurrent Hash Table
+
+    Concurrent Hash Table could be built on top of concurrent list, with a lock on each hash bucket.
+
+### Conditional Variables
+Always use while loop to check condition with condition variable.
+
+### Semaphores
+A semaphore is an object with an integer value that we can manipulate with two routines. It should be initialized to some value, which determines its behavior.
+- sem_wait()
+
+    decrement the int value, and suspend caller if the value is negative
+
+- sem_post()
+
+    increment the int value, and wake a waiting thread up if there is one
+
+Usage
+- Binary Semaphores (Locks)
+
+    semaphore initialized to 1
+
+- Semaphores as Condition Variables
+
+    initial value depends, really confusing to me, I would try avoid semaphore personally...
+
+### Reader-Writer Locks
+More complication and overhead than simple mutex. Perhaps doesn't give much performance improvement.
+
+### Common Concurrentcy Problems
+- atomicity violation
+- order violation
+- deadlock
