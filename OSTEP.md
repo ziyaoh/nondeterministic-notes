@@ -340,3 +340,135 @@ More complication and overhead than simple mutex. Perhaps doesn't give much perf
 - atomicity violation
 - order violation
 - deadlock
+
+## Persistence
+
+### I/O Devices
+Components in a computer system are connected via a hierarchical structure: multiple buses, which are communication system that transfer data between components inside a computer.
+- memory bus
+
+    CPU, memory
+
+- I/O bus
+
+    graphics and higher-performance I/O devices
+
+- peripheral bus
+
+    SCSI, SATA, USB
+
+#### A Canonical Device
+- hardware interface: registers that allows OS to control the device
+
+    - Status: current status of the device
+    - Command: tell the device to perform a certian task
+    - Data: to pass data to, or get data from the device
+
+- internal structure
+
+#### Communication Protocol
+- programmed I/O (PIO): synchronous communication with device
+
+    busy waiting for device ready to receive a new command, issues the command, then busy waiting until it's done
+
+    easy but inefficient on slow devices
+
+- interrupt: async communication
+
+    OS issues a request then sleep the calling thread, and switches to another thread. Device raises a hardware interrupt after it's done. An interrupt handler handles this, finish the request and wake the calling thread.
+
+    Good for slow devices but creates overhead with fast devices, with the extra context switching, interrupt, etc.
+
+    One optimization is to coalesce multiple interrupts into a single one.
+
+- hybrid
+
+    PIO for a little while and then use interrupt
+
+**Direct Memory Access (DMA)** engine can orchestrate data transfers between devices and main memory without much CPU intervention. CPU can thus do some other work while we save data from memory to other device (say disk).
+
+#### Communication between OS and Devices
+- Explicit I/O Instructions
+
+- Memory-Mapped I/O
+
+    hardware maps device registers to memory locations, so the os just read or write to the memory address
+
+**Device driver** abstract away the detail of different device interfaces. Filesystem (and applications above) simply issues block read/write requests to the generic block layer, which routes them to the appropriate device driver, which handles the details of issuing the specific request.
+
+### Hard Disk Drives
+
+#### Basic Geometry
+- platter
+- surface
+- track
+- disk head & disk arm
+
+I/O time inside disk: `seek + rotational delay + transfer`
+
+**Cache** or **track buffer** is some small amount of memory which the drive can use to hold data read from or written to the disk.
+
+Cahce for writes: **write back** vs **write through**
+
+#### Disk Scheduling
+OS orders the I/Os issued to the disk to minimize latency, according to a greedy principle of **SJF (shortest job first)**. Mostly in old OS I guess...
+
+- SSTF: Shortest Seek Time First (nearest-block-first)
+
+    issues close-by I/O requests first
+
+    cause a problem of starvation
+
+- Elevator (SCAN)
+
+    moves back and forth across the disk servicing requests in the order across the tracks
+
+- SPTF: Shortest Positioning Time First
+
+    consider both seek time and rotational delay, usually performed inside a drive
+
+### Redundant Arrays of Inexpensive Disks (RAIDs)
+Use multiple disks in concert to build a **faster**, **bigger**, and **more reliable** disk system.
+
+*TODO*
+
+### Storage Virtualization
+#### Filesystem Syscalls
+
+#### Disk Structure
+- Super Block
+- Inodes
+- Data Blocks
+
+#### Access by Path
+- Read
+
+    1. open: traverse through the path to the target inode, copy inode into memory
+    3. read: consult the inode for location of data block, read from disk, manage offset
+    4. close
+
+- Write
+
+    even more disk I/Os required
+
+#### Caching and Buffering
+Modern systems employ a dynamic partitioning strategy in the memory as a cache for disk blocks for reading purpose.
+
+Write buffering is applied to optimize disk write I/O, by delay and batch disk write requests. One trade-off to consider: durability vs performance. Longer delay means better performance, but higher data loss risk in case of system crash while delaying.
+
+### Fast Filesystem
+Optimization of the internal filesystem structure and allocation policies to be "disk aware", but still adhere to the existing interface.
+
+**cylinder group & block group**
+
+consecutive read within the same block group doesn't take long time seeking.
+
+**Policy**
+
+keep related stuff together, and unrelated stuff far apart
+
+**Problem**
+Internal fragmentation could be a problem, and **sub-blocks** comes to rescue.
+
+**Parameterization**
+interleave data blocks with free blocks to optimize for consecutive reading
