@@ -456,7 +456,7 @@ Modern systems employ a dynamic partitioning strategy in the memory as a cache f
 
 Write buffering is applied to optimize disk write I/O, by delay and batch disk write requests. One trade-off to consider: durability vs performance. Longer delay means better performance, but higher data loss risk in case of system crash while delaying.
 
-### Fast Filesystem
+### Fast File System
 Optimization of the internal filesystem structure and allocation policies to be "disk aware", but still adhere to the existing interface.
 
 **cylinder group & block group**
@@ -472,3 +472,51 @@ Internal fragmentation could be a problem, and **sub-blocks** comes to rescue.
 
 **Parameterization**
 interleave data blocks with free blocks to optimize for consecutive reading
+
+### Crash Consistency and Recovery
+**Journaling** write down a little note describing what you are about to do somewhere on disk, before overwriting the structures in place.
+
+#### Data Journaling
+
+1. Journal write
+
+    write the transaction, including a transaction-begin block, all pending data and metadata updates, to the log; wait for these writes to complete
+
+2. Journal commit
+
+    write thhe transaction commit block (transaction-end block) to the log; wait for write to complete
+
+3. Checkpoint
+
+    write the pending metadata and data updates to their final locations in the file system
+
+4. Free
+
+    mark the transaction free int he journal by updating the journal superblock
+
+Journal committing is applied to handle system crashes while writing the journal.
+
+#### Metadata Journaling
+
+During the journal write step, only log pending metadata updates, **wihtout** data block updates, thus preventing double writes for each data block. Data writes happen before journal writes
+
+1. Data write
+2. Jounal metadata write (without data block updates)
+3. Jounal commit
+4. Metadata checkpoint
+5. Free
+
+### Log Based Filesystem
+*TODO*
+
+### Data Integrity and Protection
+*TODO*
+
+## Distribution
+### RPC
+
+### Distributed Filesystem
+
+#### Sun Network File System (NFSv2)
+
+NFSv2 file server is stateless, leaving client filesystem to do the state management. This is to help with simple server crash recovery.
