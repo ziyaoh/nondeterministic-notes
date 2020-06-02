@@ -519,4 +519,16 @@ During the journal write step, only log pending metadata updates, **wihtout** da
 
 #### Sun Network File System (NFSv2)
 
-NFSv2 file server is stateless, leaving client filesystem to do the state management. This is to help with simple server crash recovery.
+NFSv2 file server is **stateless**, leaving client filesystem to do the state management. This is to help with simple server crash recovery.
+
+Most NFS requests are **idempotent** so that client could simply retry the request if not responded timely. Idempotency enables simple error handling.
+
+**Client-side caching** is employed to improve performance. NFS clients implement **flush-on-close** consistency semantics and checks for stale local cache while opening a file with a *GETATTR* request, to address the local caching consistency problem. They also implemented **attribute cache** to help with the problem of too many *GETATTR* requests..
+
+When serving a Write request, NFS file servers has to commit each write to persistent storage before replying the client of success.
+
+#### The Andrew File System (AFS)
+
+AFS does **whole-file cachine** on **local disk** of the client machine that is accessing a file.
+
+AFSv2 introduced the notion of a callback that the server promise to inform the client when a file that the client is caching has been modified. This is to address the problem of too many stale cache checking.
