@@ -89,3 +89,35 @@ Specifically for analytics purpose. Data are usually dump from OLTP databases to
 Start schema and snowflake schema: a huge central fact table storing lots of events, with reference to many surrounding dimension tables. Fact table tends to be very wide -- a few hundreds columns wide -- to be flexible enough for different analytics.
 
 Since single analytics tends only uses a few columns of a lot of rows, data warehouses go for column oriented storage -- store columns in seperate columns files. This relies on each column file containing the rows in the same order.
+
+### Encoding and Evolution
+
+#### Encoding and Decoding
+In case application requirement changes, we don't want to deploy new version all at once to prevent service downtime. Rolling upgrade means coexistance of old version and new version, both code and data. This requires **backward compatibility** and **forward compatibility**.
+
+**Language bulit in package**
+
+Language built-in encoding packages are not ideal under most cases due to several reasons:
+- the encoding would be tied to a particular programming language
+- security reason
+- versioning data is hard
+- efficiency (performance) issues
+
+**Textual formats**
+
+Json, XML, and CSV are popular and human readable, but not very space efficient. Schema is optional for Json and XML.
+
+**Thrift and Protocol Buffers**
+
+Thrift and Protobuf are binary encodings, which requires schema. Both support forward and backward compatibility with the help of field tag number.
+
+**Avro**
+
+Avro is another binary encoding. It needs both the writer schema and reader schema in the decoding process. To get the writer schema as reader:
+- large file with lots of records: indicate schema once at the begining
+- database with individually written records: include a Avro schema version number + a database for history of Avro schemas
+- sending records over a network: communication schema during connection setup
+
+Avro is usful for dynamically generated schemas.
+
+#### Modes of Dataflow
