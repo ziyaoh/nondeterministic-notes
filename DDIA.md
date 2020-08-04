@@ -121,3 +121,6 @@ Avro is another binary encoding. It needs both the writer schema and reader sche
 Avro is usful for dynamically generated schemas.
 
 #### Modes of Dataflow
+- through database
+- REST and RPC
+- message passing
