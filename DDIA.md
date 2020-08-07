@@ -124,3 +124,31 @@ Avro is usful for dynamically generated schemas.
 - through database
 - REST and RPC
 - message passing
+
+## Distributed Data Storage
+
+### Replication
+
+#### Leader based replication
+
+single leader writes to leader only, reads to all nodes
+
+Sync vs Async vs Semi-Sync replication: when does a leader respond to a write request
+
+Membership change
+
+Handle node outage: Follower fail? Leader fail?
+
+#### Replication Logs
+- statement-based replication: leader logs every request and sends those to followers
+- write-ahead log (WAL) shipping
+- logical (row-based) log replication
+- trigger-based replication
+
+#### Multi-Leader Replication
+
+#### Leaderless Replication
+
+All replicas accept all write and read requests. Client is responsible for talking to multiple nodes to ensure consistency. Specifically, the sets of nodes used by the read and write operations must overlap in at least one node. Although this quorom doesn't guarantee consistency under some edge cases (e.g. sloppy quorum and hinted handoff)
+
+Vector clocks are employed to determine concurrent writes to the same value on different replicas. Conflict resolution is required in case of concurrent write (e.g. last write wins).
