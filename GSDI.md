@@ -58,6 +58,62 @@ potential problems
 - referential integrity
 - rebalancing in case data or traffic distribution not uniform
 
+### Indexes
+
+### Proxies
+
+Proxies are used to filter requests, log requests, or sometimes transform requests (by adding/removing headers, encrypting/decrypting, or compressing a resource). Another advantage of a proxy server is that its cache can serve a lot of requests. If multiple clients access a particular resource, the proxy server can cache it and serve it to all the clients without going to the remote server.
+
+### Redundancy and Replication
+
+### SQL vs NoSQL
+
+Examples of NoSQL
+- Key-Value Store: Redis, Dynamo
+- Document Database: MongoDB
+- Wide-Column Database: Cassandra, HBase
+- Grph Database: Neo4J
+
+high level differences:
+- Storage
+
+    SQL stores data in tables
+
+    NoSQL has different data models
+
+- Schema
+
+    SQL has schema
+
+    NoSQL is schemaless, or dynamic to change
+
+
+- Querying
+
+    SQL databases use SQL
+
+    some NoSQL also supports SQL querying, others use UnQL
+
+- Scalability
+
+    SQL databases are vertically scalable, horizontal scaling is hard
+
+    NoSQL is easily horizontally scalable
+
+- ACID
+
+    vast majority of SQL databases are ACID compliant
+
+    most of NoSQL sacrifice ACID for performance and scalability
+
+### Long-Polling vs WebSockets vs Server-Sent Events
+
+Polling & Long Polling works by client actively sends requests to retrive latest update from server. Polling is when server responds ASAP, and Long Polling is when server delays the response if there's no current update.
+
+WebSockets is a peer-to-peer protocol on top of TCP, so that once established, the server and client can exchange data in both directions at any time.
+
+Server-Sent Events (SSEs) is a persistent and long-term connection so that server can actively send data to client.
+
 ## TinyURL
 
 ### Requirements
