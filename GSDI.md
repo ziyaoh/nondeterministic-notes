@@ -122,6 +122,18 @@ Server-Sent Events (SSEs) is a persistent and long-term connection so that serve
 - users can pick a custom alias for their link
 - links will expire after a default timespan, user can specify this expiration time
 
+### Design
+
+Read heavy, append only, no update, no relation - NoSQL database
+
+A offline key generation service computing and storing candidate keys before hand
+
+Cache some available keys in application for faster new key lookup
+
+Cache recent read requests
+
+Lazy / batch cleaning of expired translations
+
 ## Pastebin
 Users of the service enter a piece of text and get a random URL to access it
 
@@ -129,3 +141,17 @@ Users of the service enter a piece of text and get a random URL to access it
 - user can upload text and get a unique URL to access it
 - data and link will expire after a default timespan, user can specify this expiration time
 - user can pick a custom URL for their data
+
+### Design
+
+Pretty much the same with TinyURL.
+
+Seperate metadata storage with content storage.
+
+## Instagram
+
+### Requirements
+- users can upload/download/view photos
+- users can search based on photo/viedo titles
+- users can follow other users
+- system should generate and display a user's News Feed consisting of top photos from all the people the user follows

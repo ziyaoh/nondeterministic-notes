@@ -152,3 +152,53 @@ Handle node outage: Follower fail? Leader fail?
 All replicas accept all write and read requests. Client is responsible for talking to multiple nodes to ensure consistency. Specifically, the sets of nodes used by the read and write operations must overlap in at least one node. Although this quorom doesn't guarantee consistency under some edge cases (e.g. sloppy quorum and hinted handoff)
 
 Vector clocks are employed to determine concurrent writes to the same value on different replicas. Conflict resolution is required in case of concurrent write (e.g. last write wins).
+
+### Partition
+
+Partitioning is usually combined with replication so that copies of each partition are stored on multiple nodes. Partition schema and replication schema are mostly independent from each other.
+
+#### Partitioning of Key-Value Data
+
+- by key range
+
+    friendly for range scan
+
+    distribution can easily be skewed
+
+- by hash of key
+
+    distribution is usually balanced
+
+    hard to do range query
+
+#### Partitioning and Secondary Indexes
+
+Secondary indexes don't map neatly to partitions. Two main approaches
+
+- document-based partitioning
+
+    partition by primary key, with local secondary indexes managed independently by each partition
+
+    writing is easy but querying secondary index is hard, since we have to query all partitions
+
+- term-based partitioning
+
+    global secondary indexes themselves are partitioned
+    
+    querying a secondary index is easier since we only need contact one partition now; writing is harder because secondary indexes of a single document may scatter across multiple partitions
+
+#### Rebalancing Partitions
+
+- fixed number of partitions
+
+    create many more partitions than there are nodes, change parition to node assignment to do rebalancing
+
+- dynamic partitioning
+
+    dynamically merge or split partitions according to data size
+
+- partitioning proportionally to nodes
+
+    each node has fixed number of partitions
+
+#### Request Routing (Service Discovery)
