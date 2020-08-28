@@ -202,3 +202,13 @@ Secondary indexes don't map neatly to partitions. Two main approaches
     each node has fixed number of partitions
 
 #### Request Routing (Service Discovery)
+
+### Transactions
+
+A transaction is a way for an application to group several reads and writes together into a logical unit.
+
+#### ACID
+- Atomicity: all or nothing
+- Consistency: application invariants always be true (application dependent)
+- Isolation: concurrent transactions are isolated from each other
+- Durability: data being persistent once committed

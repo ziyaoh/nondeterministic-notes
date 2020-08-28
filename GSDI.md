@@ -155,3 +155,13 @@ Seperate metadata storage with content storage.
 - users can search based on photo/viedo titles
 - users can follow other users
 - system should generate and display a user's News Feed consisting of top photos from all the people the user follows
+
+## Dropbox
+
+### Requirements
+- user can upload and download files/photos from any device
+- user can share files or folders with other users
+- service should support automatic synchronization between devices
+- system should support storing large files up to a GB
+- ACID-ity is required on all file operations
+- offline editing is required
