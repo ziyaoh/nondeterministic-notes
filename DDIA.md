@@ -212,3 +212,28 @@ A transaction is a way for an application to group several reads and writes toge
 - Consistency: application invariants always be true (application dependent)
 - Isolation: concurrent transactions are isolated from each other
 - Durability: data being persistent once committed
+
+### Trouble with Distrbuted Systems
+
+Distributed Systems in the cloud computing area suffers from partial failures. Some part may fail while the rest working correctly. As opposed to the single machine scenario, where a hardware failure usually triggers the whole system shutting down.
+
+#### Unreliable Networks
+
+#### Unreliable Clocks
+
+clocks on different machines represents different timing, because they could drift slowly
+
+syncing is possible through NTP protocol, but some problems remain: precision can only be as good as network delay, which is again unreliable
+
+clocks issues are hard to notice, and thus can accumulate errors over time
+
+case study
+- timestamps for ordering events: use logic or vector clock instead
+- sync clocks for global snapshots: requires monotonically increasing transaction ID accross multiple machines; intuitive but problematic solution: timestamp from clocks
+- problems when using local clocks in case process paused for a long time
+
+#### Knowledge, Truth, and Lies
+
+distributed systems cannot simply rely on a single node; instead they require decision from a quorum
+
+distributed system algorithm correctness can only be proved under some idealized system models, which makes assumptions about the system that are supposed to always hold; in reality those assumptions could break as well
