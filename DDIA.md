@@ -237,3 +237,37 @@ case study
 distributed systems cannot simply rely on a single node; instead they require decision from a quorum
 
 distributed system algorithm correctness can only be proved under some idealized system models, which makes assumptions about the system that are supposed to always hold; in reality those assumptions could break as well
+
+### Consistency and Consensus
+
+#### Linearizability
+
+Appear as if there's only one single data replica.
+- reads reflect the latest changes (as appeared to user)
+- reads are monotonic
+
+From perspective of CAP: linearizability chooses Consistency, non-linearizability chooses Availability
+
+#### Ordering Guarantees
+
+Total Ordering vs Partial Ordering (e.g. Causal Ordering)
+
+Causal consistency is the strongest possible consistency model that does not slow down due to network delays, and remains available in the face of network failures. So **CAP doesn't apply here**.
+
+Use Vector Clock to determine causal relation
+
+Total order broadcast provides total ordering across nodes (heartbeats in Raft)
+- reliable delivery
+- totally ordered delivery
+
+Total order broadcast is equivalent to consensus.
+
+#### Distributed Transactions and Consensus
+
+Two-Phase Commit (2PC)
+
+Heterogeneous distributed transactions is useful to integrate multiple different systems together. e.g. exactly once message broker
+
+Fault-tolerant consensus
+
+Tools like ZooKeeper, etcd are usually used as coordination service in production. e.g. consensus, operation ordering, failure detection, sharding allocation, etc.
