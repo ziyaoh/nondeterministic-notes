@@ -271,3 +271,81 @@ Heterogeneous distributed transactions is useful to integrate multiple different
 Fault-tolerant consensus
 
 Tools like ZooKeeper, etcd are usually used as coordination service in production. e.g. consensus, operation ordering, failure detection, sharding allocation, etc.
+
+## Derived Data (Data Processing)
+
+Types of systems
+
+- Services (online systems)
+
+    wait for requests and returns responses; measured by response time
+
+- Batch Processing Systems (offline systems)
+
+    periodically runs a job to process large amount of input data; measured by throughput
+
+- Stream Processing Systems (near-real-time systems)
+
+    TODO: buid upon batch processing?
+
+### Batch Processing
+
+Unix Tooling Philosophy
+- each tool does one thing well
+- expect output to be input to another tool
+    
+    uniform interface, files (file descriptors in unix)
+
+- separation of logic and wiring
+
+    decoupling, using stdin and stdout
+
+- transparency and experimentation
+
+#### MapReduce and Distributed Filesystems
+
+Like unix tools in many ways. Reads and write files on a distributed filesystem. (HDFS in Hadoop implementation)
+
+**HDFS** (Hadoop Distributed File System) runs on cluster of machines, each running a daemon process exposing a network service that allows other nodes to access files stored on that machine. A central service **NameNode** keeps track of which file blocks are stored on which machine.
+
+**MapReduce Job** consists of four steps
+
+- read a set of input files, break it up into records
+- custom **Mapper** function to extract any number of key-value pairs from each record
+- sort the pairs by key (implicit in MapReduce framework)
+- custom **Reducer** function to aggregate information from all values belong to each key
+
+Each MapReduce job is executed in distributed fashion. Every relevant machine runs a Mapper function to reduce network load. Reducers functions are run on different set of machines (conceptually). 
+
+Mapping between keys and Reducer tasks by done using hash of the key. Each Mapper partitions, sorts, and writes out its output by target Reducer. Reducers then fetch their corresponding data from each Mapper. This process is known as **shuffle**. Each Reducer function eventually process values from one key. 
+
+**Join**
+
+- Reduce Side Join and Grouping
+
+    sort-merge join: multiple sets of mappers sort their records by the same key (some ID for example), and same key goes to the same reducer, reducer then joins the records with the same key together
+
+    GroupBy could be implemented with a sort-merge join intuitively
+
+- Map Side Join
+
+    - broadcaset hash join
+
+        if one input dataset is small enough to fit in a mapper function memory (or disk)
+
+    - partitioned hash join
+
+        if all input datasets are partitioned in the same way, so each mapper could only work on one partition of both datasets
+
+    - map-side merge join
+
+        if all input datasets are partitioned and sorted in the same way
+
+
+**Handling Skews (especially for Joining)**
+
+- sample job to determine hot keys, then randomized reducer for those hot keys; in case of joining, some records for those keys need to be replicated to all candidate reducer
+
+- predefined hot keys, then shard them
+
+- predefined hot keys, and related records are stored seperately; use a map-side joining to join those hot keys
