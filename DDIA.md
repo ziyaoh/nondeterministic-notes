@@ -349,3 +349,52 @@ Mapping between keys and Reducer tasks by done using hash of the key. Each Mappe
 - predefined hot keys, then shard them
 
 - predefined hot keys, and related records are stored seperately; use a map-side joining to join those hot keys
+
+#### Beyond MapReduce
+
+MapReduce model is generic, but slower in some cases
+
+**Materialization of Intermediate State**
+
+A workflow consists of multiple MapReduce jobs, each of which writes its output to Distributed Filesystem for easy and intuitive recovery purpose. This is called materialization of intermediate state. But a lot of times this is an overkill. Removing this step helps
+
+- save the cost of writing data to Distributed Filesystem
+- save redundant mapper work if previous reducer output the data in the same partitions and orders
+- allow stream-ish processing because downstream jobs don't have to wait for previous jobs to completely finish
+
+Dataflow Engines, s.t. **Spark**, Tez, and Flink, are some solutions for the problem above. Their workflows consist of a series of *operators* user defined functions. The intermediate states are kept in memory or written to local disk, which is faster than HDFS.
+
+For Fault Tolerance, dataflow engines recomputes the data if some operators fail. This requires the knowledge of how a given piece of data was computed —- which input partitions it used, and which operators were applied to it. Spark uses resilient distributed dataset (RDD) to track the ancestry of data. To this end, it is best to make operators deterministic.
+
+**Graph Model Dataset Processing**
+
+Iterative, while style execution. Every vertex process its own partition of data for each iteration. Output could be transferred to neighboring vertices as input the next iteration.
+
+### Stream Processing
+
+#### Message Systems
+
+**Direct Messaging from Producer to Consumer**
+
+A message channel like TCP or Unix pipe. Assumes that both producer and consumers are constantly online. May lose message otherwise.
+
+**Message Broker (Message Queue)**
+
+Producer - Message Broker - Consumer
+
+In case of multiple Consumers: *load balancing* vs *fan-out*
+
+- traditional message broker
+
+    store messages temporarily (mostly in memory, could be written to disk in case of message queue backlog), delete messages once the consumer confirms the consumption
+
+    RabbitMQ, Azure Service Bus
+
+- log-based message broker
+
+    messages are kept appended to log (on disk) by producer, each of which are assigned a monotonically increasing sequence number; consumers read through the log sequentially (tracked by consumer offset); messages are retained for a while and deleted after the circular buffer is full
+
+    log can be partitioned for scaling purpose
+
+    Apache Kafka, Amazon Kinesis Streams, Twtter's DistributedLog
+
